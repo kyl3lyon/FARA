@@ -57,10 +57,10 @@ def calculate_indicators(df, ticker_list):
 
     for ticker in ticker_list:
         col = f'{ticker}_close'
-        ticker_name = ticker.split('_')[0]  # Extract ticker name
+        ticker_name = ticker.split('_')[0]  # extract ticker name
 
         if col not in df.columns:
-            continue  # Skip this iteration if the column does not exist in the dataframe
+            continue  # skip this iteration if the column does not exist in the dataframe
 
         # calculate 7-day and 21-day moving averages
         df[f'{ticker_name}_4w_mavg'] = df[col].rolling(window=7).mean()
@@ -77,7 +77,7 @@ def calculate_indicators(df, ticker_list):
         # calculate momentum
         df[f'{ticker_name}_momentum'] = df[col] - df[col].shift(1)
 
-    # Drop any rows with missing data
+    # drop any rows with missing data
     df.dropna(inplace=True)
 
     return df
@@ -87,13 +87,13 @@ def arima_prediction_and_plot(assets, train_split=0.8, conf_int=0.95):
     plt.figure(figsize=(12, 6))
 
     for asset_col, asset_indicators in assets.items():
-        # Get the asset_col column from the asset_indicators dataframe
+        # get the asset_col column from the asset_indicators dataframe
         price_data = asset_indicators[asset_col]
 
-        # Calculate the train-test split index
+        # calculate the train-test split index
         train_size = int(len(price_data) * train_split)
 
-        # Split the data into training and testing sets
+        # split the data into training and testing sets
         train_data = price_data[:train_size]
         test_data = price_data[train_size:]
 
@@ -126,7 +126,11 @@ def arima_prediction_and_plot(assets, train_split=0.8, conf_int=0.95):
     plt.title('ARIMA Model Forecast for Asset(s) with 95% Confidence Interval')
     plt.legend()
     img = io.BytesIO()
+    plt.tight_layout()
     plt.savefig(img, format='png', bbox_inches='tight')
+    plt.clf()
+    plt.cla()
+    plt.close()
     img.seek(0)
     return base64.b64encode(img.getvalue()).decode('utf-8')
 
