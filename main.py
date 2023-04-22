@@ -23,6 +23,7 @@ from math import sqrt
 import io
 import base64
 
+
 app = Flask(__name__)
 
 
@@ -32,7 +33,7 @@ def get_historical_data(tickers_list, start_date):
 
     for ticker in tickers_list:
         yahoo_financials = yf.Ticker(ticker)
-        data = yahoo_financials.history(start=start_date, end=today, interval='1wk')
+        data = yahoo_financials.history(start=start_date, end=today, interval='1d')
         data.index = data.index.normalize()
 
         data.rename(columns={'Open': f'{ticker}_open',
@@ -43,13 +44,6 @@ def get_historical_data(tickers_list, start_date):
         result = pd.concat([result, data[[f'{ticker}_open', f'{ticker}_close', f'{ticker}_high', f'{ticker}_low']]], axis=1)
 
     return result
-  
-
-# usage
-tickers_list = ['AAPL', 'MSFT', 'INTC']
-start_date = '2018-01-01'
-
-historical_data = get_historical_data(tickers_list, start_date)
 
 
 def calculate_indicators(df, ticker_list):
@@ -63,11 +57,14 @@ def calculate_indicators(df, ticker_list):
 
     for ticker in ticker_list:
         col = f'{ticker}_close'
-        ticker_name = ticker.split('_')[0] # Extract ticker name
+        ticker_name = ticker.split('_')[0]  # Extract ticker name
+
+        if col not in df.columns:
+            continue  # Skip this iteration if the column does not exist in the dataframe
 
         # calculate 7-day and 21-day moving averages
-        df[f'{ticker_name}_7d_mavg'] = df[col].rolling(window=4).mean()
-        df[f'{ticker_name}_21d_mavg'] = df[col].rolling(window=8).mean()
+        df[f'{ticker_name}_4w_mavg'] = df[col].rolling(window=7).mean()
+        df[f'{ticker_name}_8w_mavg'] = df[col].rolling(window=21).mean()
 
         # calculate Bollinger Bands
         upper_band, lower_band = bollinger_bands(df[col])
@@ -151,7 +148,7 @@ def index():
             assets[asset_col] = asset_indicators
 
         img = arima_prediction_and_plot(assets)
-        return render_template('index.html', plot=img)
+        return f'<img src="data:image/png;base64,{img}" alt="ARIMA Forecast" />' # Return only the image element
     return render_template('index.html')
 
 if __name__ == '__main__':

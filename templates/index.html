@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ARIMA Forecast</title>
+    <style>
+        /* Add your custom styles here */
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function submitForm() {
+            const formData = new FormData(document.getElementById("forecast-form"));
+
+            $.ajax({
+                url: '/',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    document.getElementById("plot-container").innerHTML = response;
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>ARIMA Forecast for Multiple Assets</h1>
+    <form id="forecast-form" method="POST" action="/">
+        <label for="tickers">Select Assets:</label>
+        <select name="tickers" id="tickers" multiple="multiple">
+            <option value="AAPL">Apple Inc. (AAPL)</option>
+            <option value="MSFT">Microsoft Corporation (MSFT)</option>
+            <option value="INTC">Intel Corporation (INTC)</option>
+            <!-- Add more options here -->
+        </select>
+        <br>
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" value="2018-01-01">
+        <br>
+        <input type="button" value="Submit" onclick="submitForm()">
+    </form>
+    <div id="plot-container">
+        {% if plot %}
+        <img src="data:image/png;base64,{{ plot }}" alt="ARIMA Forecast" />
+        {% endif %}
+    </div>
+</body>
+</html>
+
