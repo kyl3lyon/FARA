@@ -1,13 +1,13 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from replit import web
-import os
 
 # data manipulation and analysis libraries
 import pandas as pd
 from datetime import date
 
 # data visualization libraries
-import matplotlib.pyplot as plt
+import plotly.graph_objs as go
+import plotly
 
 # data retrieval and analysis libraries
 import yfinance as yf
@@ -18,10 +18,6 @@ from pmdarima import auto_arima
 # machine learning libraries
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from math import sqrt
-
-# img
-import io
-import base64
 
 
 app = Flask(__name__)
@@ -47,7 +43,7 @@ def get_historical_data(tickers_list, start_date):
 
 
 def calculate_indicators(df, ticker_list):
-    
+
     def bollinger_bands(data, window=20, num_std=2):
         rolling_mean = data.rolling(window=window).mean()
         rolling_std = data.rolling(window=window).std()
@@ -84,7 +80,7 @@ def calculate_indicators(df, ticker_list):
 
 
 def arima_prediction_and_plot(assets, train_split=0.8, conf_int=0.95):
-    plt.figure(figsize=(12, 6))
+    fig = go.Figure()
 
     for asset_col, asset_indicators in assets.items():
         # get the asset_col column from the asset_indicators dataframe
@@ -97,7 +93,9 @@ def arima_prediction_and_plot(assets, train_split=0.8, conf_int=0.95):
         train_data = price_data[:train_size]
         test_data = price_data[train_size:]
 
-        arima_model = auto_arima(train_data, seasonal=False, stepwise=True,
+        arima_model = auto_arima(train_data,
+                                 seasonal=False,
+                                 stepwise=True,
                                  suppress_warnings=True,
                                  max_order=None, trace=True)
 
@@ -116,24 +114,29 @@ def arima_prediction_and_plot(assets, train_split=0.8, conf_int=0.95):
         print(f'{asset_col} MSE: {mse}')
         print(f'{asset_col} RMSE: {rmse}')
 
-        plt.plot(train_data, label=f'{asset_col} Training Data')
-        plt.plot(test_data.index, test_data, label=f'{asset_col} Test Data')
-        plt.plot(test_data.index, forecast, label=f'{asset_col} Forecast')
-        plt.fill_between(test_data.index, lower_series, upper_series, alpha=0.2)
+        fig.add_trace(go.Scatter(x=train_data.index, y=train_data,
+                                 mode='lines',
+                                 name=f'{asset_col} Training Data'))
+        fig.add_trace(go.Scatter(x=test_data.index, y=test_data,
+                                 mode='lines',
+                                 name=f'{asset_col} Test Data'))
+        fig.add_trace(go.Scatter(x=test_data.index, y=forecast,
+                                 mode='lines',
+                                 name=f'{asset_col} Forecast'))
+        fig.add_trace(go.Scatter(x=test_data.index, y=lower_series,
+                                 mode='lines',
+                                 name=f'{asset_col} Lower Bound',
+                                 line=dict(width=0)))
+        fig.add_trace(go.Scatter(x=test_data.index, y=upper_series,
+                                 mode='lines',
+                                 name=f'{asset_col} Upper Bound',
+                                 fill='tonexty'))
 
-    plt.xlabel('Date')
-    plt.ylabel('Asset Price')
-    plt.title('ARIMA Model Forecast for Asset(s) with 95% Confidence Interval')
-    plt.legend()
-    img = io.BytesIO()
-    plt.tight_layout()
-    plt.savefig(img, format='png', bbox_inches='tight')
-    plt.clf()
-    plt.cla()
-    plt.close()
-    img.seek(0)
-    return base64.b64encode(img.getvalue()).decode('utf-8')
+    fig.update_layout(title='ARIMA Model Forecast for Asset(s) with 95% Confidence Interval',
+                      xaxis_title='Date',
+                      yaxis_title='Asset Price')
 
+    return plotly.io.to_json(fig)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -151,12 +154,9 @@ def index():
             asset_indicators = calculate_indicators(historical_data, asset_col)
             assets[asset_col] = asset_indicators
 
-        img = arima_prediction_and_plot(assets)
-        return f'<img src="data:image/png;base64,{img}" alt="ARIMA Forecast" />' # Return only the image element
+        plot = arima_prediction_and_plot(assets)
+        return jsonify(plot=plot)  # Return the JSON representation of the plot
     return render_template('index.html')
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
-
-web.run(app)
+    web.run(app)
