@@ -540,6 +540,18 @@ docs = ["furo (>=2022.12.7)", "proselint (>=0.13)", "sphinx-autodoc-typehints (>
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.2.2)", "pytest-cov (>=4)", "pytest-mock (>=3.10)", "pytest (>=7.2)"]
 
 [[package]]
+name = "plotly"
+version = "5.14.1"
+description = "An open-source, interactive data visualization library for Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+packaging = "*"
+tenacity = ">=6.2.0"
+
+[[package]]
 name = "pluggy"
 version = "1.0.0"
 description = "plugin and hook calling mechanisms for python"
@@ -837,6 +849,17 @@ develop = ["cython (>=0.29.32)", "cython (>=0.29.32,<3.0.0)", "setuptools-scm[to
 docs = ["sphinx", "nbconvert", "jupyter-client", "ipykernel", "matplotlib", "nbformat", "numpydoc", "pandas-datareader"]
 
 [[package]]
+name = "tenacity"
+version = "8.2.2"
+description = "Retry code until it succeeds"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+doc = ["reno", "sphinx", "tornado (>=4.5)"]
+
+[[package]]
 name = "threadpoolctl"
 version = "3.1.0"
 description = "threadpoolctl"
@@ -971,7 +994,7 @@ requests = ">=2.26"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10.0,<3.11"
-content-hash = "1121cb1c14d287a57885196899ff211129eb9b85c5c480f9cf5e084b2ea64b12"
+content-hash = "aa66a70867303634b827c313d9a515cef89f471c92790ba7b8cc6218663b4a25"
 
 [metadata.files]
 aiohttp = []
@@ -1017,6 +1040,7 @@ passlib = []
 patsy = []
 pillow = []
 platformdirs = []
+plotly = []
 pluggy = []
 pmdarima = []
 protobuf = []
@@ -1038,6 +1062,7 @@ scipy = []
 six = []
 soupsieve = []
 statsmodels = []
+tenacity = []
 threadpoolctl = []
 toml = []
 tomli = []
