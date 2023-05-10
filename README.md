@@ -1,4 +1,8 @@
 # Financial ARIMA Forecast for Multiple Assets
+<p align="center">
+  <img src="https://github.com/kyl3lyon/FARA/blob/main/fara.gif?raw=true" alt="fara" />
+</p>
+
 This repository contains a Flask web application designed for stock analysis and forecasting using the ARIMA (AutoRegressive Integrated Moving Average) model. The application allows users to input multiple stock tickers and a start date, after which it retrieves historical stock data, calculates various technical indicators, and generates stock price forecasts using the ARIMA model.
 
 ## How it works
